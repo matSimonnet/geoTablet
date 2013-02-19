@@ -14,6 +14,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
+import android.util.Log;
 import android.view.MotionEvent;
 
 
@@ -25,6 +26,8 @@ public class GeoTabMapView extends MapView{
 	MapDatabase mapDatabase;
 	private GeoTabMapDatabaseCallback callback = null;
 	public TextToSpeech tts = null; 
+	public TextToSpeech ttsOutOfMap = null; 
+	private boolean out = false;
 	
 	//View Scale
 	public float viewScale = (float)1.2;
@@ -44,6 +47,7 @@ public class GeoTabMapView extends MapView{
 			}
 		};
 		tts = new TextToSpeech(getContext(), onInitListener);
+		ttsOutOfMap = new TextToSpeech(getContext(), onInitListener);
 	}
 	
 
@@ -55,6 +59,7 @@ public class GeoTabMapView extends MapView{
 		
 		switch (action) {
 		case MotionEvent.ACTION_DOWN:
+			outOfMap(event.getX(), event.getY());
 //			Log.i("action", "MotionEvent.ACTION_DOWN");
 			Projection projection = this.getProjection();
 			long tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScaleQuery);
@@ -82,17 +87,12 @@ public class GeoTabMapView extends MapView{
 		case MotionEvent.ACTION_UP:
 //			Log.i("action", "MotionEvent.ACTION_UP");
 			tts.stop();
-				break;
-				
-		case MotionEvent.ACTION_POINTER_DOWN:
-//			Log.i("action", "ACTION_POINTER_DOWN");	
-				break;
-		
-		case MotionEvent.ACTION_POINTER_UP:
-//			Log.i("action", "ACTION_POINTER_UP");	
+			ttsOutOfMap.stop();
+			out = false;
 				break;
 				
 		case MotionEvent.ACTION_MOVE:
+			outOfMap(event.getX(), event.getY());
 //			Log.i("action", "MotionEvent.ACTION_MOVE");
 			projection = this.getProjection();
 			tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScaleQuery);
@@ -123,6 +123,14 @@ public class GeoTabMapView extends MapView{
 			this.callback.pois.clear();
 				break;
 				// LE BON ALGO POUR LES ANNONCES <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+				
+		case MotionEvent.ACTION_POINTER_DOWN:
+//			Log.i("action", "ACTION_POINTER_DOWN");	
+				break;
+		
+		case MotionEvent.ACTION_POINTER_UP:
+//			Log.i("action", "ACTION_POINTER_UP");	
+				break;
 			
 		default:
 			break;
@@ -208,5 +216,36 @@ public class GeoTabMapView extends MapView{
 		distance = Math.sqrt( ((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)) );
 		return distance;
 	}
+	
+	//Function to announce Out of maps
+	public void outOfMap(float x, float y){
+			int ratio = 8;
+			float height = Geotab_activity.displaymetrics.heightPixels;
+			float width = Geotab_activity.displaymetrics.widthPixels;
+	
+			if (!out){
+				
+				if ( ( x<width/ratio || x>width-width/ratio || y<height/ratio || y>height-height/ratio )
+						&& !ttsOutOfMap.isSpeaking() ){
+					ttsOutOfMap.speak("Hors Carte", TextToSpeech.QUEUE_FLUSH , null);
+					ttsOutOfMap.playSilence(1000, TextToSpeech.QUEUE_ADD, null);
+					Log.i("OutOfMap", "Hors Carte ##> " + x);
+					out = true;
+				}
+				
+			}
+			else { 
+				Log.i("OutOfMap", "END ");
+				out =false;
+				ttsOutOfMap.stop();
+			}
+
+			if (x>width/ratio || x<width-width/ratio || y>height/ratio || y<height-height/ratio){
+			out = false;
+			}
+		
+	}
+	
+	
 	
 }
