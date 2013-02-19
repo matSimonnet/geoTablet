@@ -63,9 +63,11 @@ public class Geotab_activity extends MapActivity {
 		
         // Set mapCenter
         //Porsman
-        mapController.setCenter(new GeoPoint(48.4426, -4.778));
+//        mapController.setCenter(new GeoPoint(48.4426, -4.778));
         //Toulouse
 //        mapController.setCenter(new GeoPoint(43.6037, 1.441779));
+        //Africa
+        mapController.setCenter(new GeoPoint(5, 16));
 		
         // Set map scale
         mapController.setZoom(geoTabMapView.mapScale);
