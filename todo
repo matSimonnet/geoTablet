@@ -1,0 +1,7 @@
+TodoList
+
+* gestion du touchEvent quand à la fin du contact nearestPOI != null
+- ajouter des sons aux contacts
+- menu pour voir toutes les données présentes et sélectionner
+- faire la fonction retrieveTile(X,Y,zoom)
+
