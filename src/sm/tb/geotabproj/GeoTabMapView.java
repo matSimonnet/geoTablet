@@ -21,14 +21,14 @@ import android.view.MotionEvent;
 public class GeoTabMapView extends MapView{
 	
 	//caution : treshold should be relative to the scale
-	final int nodeRadiusTreshold = 80;
+	final int nodeRadiusTreshold = 100;
 	String lastAnnounce = "";
 	MapDatabase mapDatabase;
 	private GeoTabMapDatabaseCallback callback = null;
 	public TextToSpeech tts = null; 
 	
 	//View Scale
-	public float viewScale = (float)2.0;
+	public float viewScale = (float)2.5;
 	//Tile Scale
 	public int mapScale = 18;
 	
@@ -98,7 +98,7 @@ public class GeoTabMapView extends MapView{
 			tileX = MercatorProjection.longitudeToTileX( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude(), (byte) mapScale);
 			tile = new Tile(tileX, tileY, (byte) mapScale);
 			this.mapDatabase.executeQuery(tile, this.callback);
-			Log.i("getNearestPOI", "this.callback.pois.size = " + this.callback.pois.size());
+			//Log.i("getNearestPOI", "this.callback.pois.size = " + this.callback.pois.size());
 			nearestPOI = getNearestPOI(this.callback.pois , projection.fromPixels((int)event.getX(0), (int)event.getY(0)));		
 			
 			//>>>>>>>>>>>>>>>>>>>>>>>>> LE BON ALGO POUR LES ANNONCES
