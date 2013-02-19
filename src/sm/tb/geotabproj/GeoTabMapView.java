@@ -14,7 +14,6 @@ import android.content.Context;
 import android.graphics.Point;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
-import android.util.Log;
 import android.view.MotionEvent;
 
 
