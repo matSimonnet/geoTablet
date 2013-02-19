@@ -57,6 +57,7 @@ public class Geotab_activity extends MapActivity {
         geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/" + folder + "/" + map + ".map"));
 //        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/bretagne.map"));
 //        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/midi-pyrenees.map"));
+        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
 
         // Retrieve geoTabMapView mapController  
         mapController = geoTabMapView.getController();
@@ -67,7 +68,9 @@ public class Geotab_activity extends MapActivity {
         //Toulouse
 //        mapController.setCenter(new GeoPoint(43.6037, 1.441779));
         //Africa
-        mapController.setCenter(new GeoPoint(5, 16));
+//        mapController.setCenter(new GeoPoint(5.0, 30.0));
+        //Burkina
+        mapController.setCenter(new GeoPoint(12.36, -1.53));
 		
         // Set map scale
         mapController.setZoom(geoTabMapView.mapScale);

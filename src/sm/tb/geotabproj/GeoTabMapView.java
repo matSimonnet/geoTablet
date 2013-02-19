@@ -14,6 +14,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
+import android.util.Log;
 import android.view.MotionEvent;
 
 
@@ -27,9 +28,11 @@ public class GeoTabMapView extends MapView{
 	public TextToSpeech tts = null; 
 	
 	//View Scale
-	public float viewScale = (float)2.5;
+	public float viewScale = (float)1.2;
 	//Tile Scale
-	public int mapScale = 18;
+	public int mapScale = 9;
+	//Tile Scale for executeQuery
+	public int mapScaleQuery = mapScale-2;
 	
 	public GeoTabMapView(Context context) {
 		super(context);	
@@ -55,9 +58,9 @@ public class GeoTabMapView extends MapView{
 		case MotionEvent.ACTION_DOWN:
 //			Log.i("action", "MotionEvent.ACTION_DOWN");
 			Projection projection = this.getProjection();
-			long tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScale);
-			long tileX = MercatorProjection.longitudeToTileX( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude(), (byte) mapScale);
-			Tile tile = new Tile(tileX, tileY, (byte) mapScale);
+			long tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScaleQuery);
+			long tileX = MercatorProjection.longitudeToTileX( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude(), (byte) mapScaleQuery);
+			Tile tile = new Tile(tileX, tileY, (byte) mapScaleQuery);
 			this.mapDatabase.executeQuery(tile, this.callback);
 			PointOfInterest nearestPOI = getNearestPOI(this.callback.pois , projection.fromPixels((int)event.getX(0), (int)event.getY(0)));		
 			if (nearestPOI != null) 
@@ -93,11 +96,11 @@ public class GeoTabMapView extends MapView{
 		case MotionEvent.ACTION_MOVE:
 //			Log.i("action", "MotionEvent.ACTION_MOVE");
 			projection = this.getProjection();
-			tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScale);
-			tileX = MercatorProjection.longitudeToTileX( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude(), (byte) mapScale);
-			tile = new Tile(tileX, tileY, (byte) mapScale);
+			tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScaleQuery);
+			tileX = MercatorProjection.longitudeToTileX( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude(), (byte) mapScaleQuery);
+			tile = new Tile(tileX, tileY, (byte) mapScaleQuery);
 			this.mapDatabase.executeQuery(tile, this.callback);
-			//Log.i("getNearestPOI", "this.callback.pois.size = " + this.callback.pois.size());
+//			Log.i("getNearestPOI", "this.callback.pois.size = " + this.callback.pois.size());
 			nearestPOI = getNearestPOI(this.callback.pois , projection.fromPixels((int)event.getX(0), (int)event.getY(0)));		
 			
 			//>>>>>>>>>>>>>>>>>>>>>>>>> LE BON ALGO POUR LES ANNONCES

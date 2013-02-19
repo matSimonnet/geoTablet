@@ -1,9 +1,11 @@
 TodoList
 
 * gestion du touchEvent quand à la fin du contact nearestPOI != null
+- fonction bord de carte
 - ajouter les ways
 - ajouter le second doigt
 - ajouter des sons aux contacts
 - menu pour voir toutes les données présentes et sélectionner
 - faire la fonction retrieveTile(X,Y,zoom)
+- faire une fonction pour liste un ordre d'annonce des tags
 
