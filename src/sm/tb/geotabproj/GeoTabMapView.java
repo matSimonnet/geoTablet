@@ -21,7 +21,7 @@ import android.view.MotionEvent;
 public class GeoTabMapView extends MapView{
 	
 	//caution : treshold should be relative to the scale
-	final int nodeRadiusTreshold = 100;
+	final int nodeRadiusTreshold = 120;
 	String lastAnnounce = "";
 	MapDatabase mapDatabase;
 	private GeoTabMapDatabaseCallback callback = null;
@@ -219,31 +219,27 @@ public class GeoTabMapView extends MapView{
 	
 	//Function to announce Out of maps
 	public void outOfMap(float x, float y){
-			int ratio = 8;
-			float height = Geotab_activity.displaymetrics.heightPixels;
-			float width = Geotab_activity.displaymetrics.widthPixels;
-	
-			if (!out){
-				
-				if ( ( x<width/ratio || x>width-width/ratio || y<height/ratio || y>height-height/ratio )
-						&& !ttsOutOfMap.isSpeaking() ){
-					ttsOutOfMap.speak("Hors Carte", TextToSpeech.QUEUE_FLUSH , null);
-					ttsOutOfMap.playSilence(1000, TextToSpeech.QUEUE_ADD, null);
-					Log.i("OutOfMap", "Hors Carte ##> " + x);
-					out = true;
-				}
-				
-			}
-			else { 
-				Log.i("OutOfMap", "END ");
-				out =false;
-				ttsOutOfMap.stop();
-			}
+		int ratio = 8;
+		float height = Geotab_activity.displaymetrics.heightPixels;
+		float width = Geotab_activity.displaymetrics.widthPixels;
 
-			if (x>width/ratio || x<width-width/ratio || y>height/ratio || y<height-height/ratio){
-			out = false;
-			}
-		
+		if (!out){	
+			if ( ( x<width/ratio || x>width-width/ratio || y<height/ratio || y>height-height/(ratio-2) )
+					&& !ttsOutOfMap.isSpeaking() ){
+				ttsOutOfMap.speak("Hors Carte", TextToSpeech.QUEUE_FLUSH , null);
+				ttsOutOfMap.playSilence(2000, TextToSpeech.QUEUE_ADD, null);
+				Log.i("OutOfMap", "Hors Carte ##> " + y);
+				out = true;
+			}	
+		}//end of if (!out)
+		else { 
+			Log.i("OutOfMap", "END ");
+			out =false;
+			ttsOutOfMap.stop();
+		}
+		if (x>width/ratio || x<width-width/ratio || y>height/ratio || y<height-height/ratio){
+		out = false;
+		}
 	}
 	
 	
