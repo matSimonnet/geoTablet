@@ -14,8 +14,8 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 
 @SuppressLint("SdCardPath")
@@ -36,18 +36,15 @@ public class Geotab_activity extends MapActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        //get screen size for out of map announce
 		displaymetrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         
-        
-        
     	// Set Full screen landscape
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		//requestWindowFeature(Window.FEATURE_NO_TITLE);
 		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
-        
-        
         
         // Write raw ressources less than 1MB on the device SDCard
         MapSDWriter.write( getResources().openRawResource(R.raw.porsman), folder, map);
@@ -102,6 +99,13 @@ public class Geotab_activity extends MapActivity {
 		this.tts = tts;
 	}
 
+	
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	getMenuInflater().inflate(R.menu.actionbar, menu);
+    	return super.onCreateOptionsMenu(menu);	
+    }
+	
 	@Override
 	protected void onDestroy() {
 		Log.i("GeoTabActivity","onDestroy()");
@@ -116,7 +120,6 @@ public class Geotab_activity extends MapActivity {
 	protected void onPause() {
 		Log.i("GeoTabActivity","onPause()");
 		super.onPause();
-
 	}
 
 	@Override

@@ -215,15 +215,15 @@ public class GeoTabMapView extends MapView{
 	
 	//Function to announce Out of maps
 	public void outOfMap(float x, float y){
-		int ratio = 8;
+		int ratio = 7;
 		float height = Geotab_activity.displaymetrics.heightPixels;
 		float width = Geotab_activity.displaymetrics.widthPixels;
 
 		if (!out){	
-			if ( ( x<width/ratio || x>width-width/ratio || y<height/ratio || y>height-height/(ratio-2) )
+			if ( ( x<width/ratio || x>width-width/ratio || y<height/(ratio-2) || y>height-height/(ratio-2) )
 					&& !ttsOutOfMap.isSpeaking() ){
 				ttsOutOfMap.speak("Hors Carte", TextToSpeech.QUEUE_FLUSH , null);
-				ttsOutOfMap.playSilence(2000, TextToSpeech.QUEUE_ADD, null);
+				ttsOutOfMap.playSilence(1000, TextToSpeech.QUEUE_ADD, null);
 				Log.i("OutOfMap", "Hors Carte ##> " + y);
 				out = true;
 			}	
