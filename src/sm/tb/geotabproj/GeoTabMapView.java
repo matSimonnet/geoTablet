@@ -76,10 +76,6 @@ public class GeoTabMapView extends MapView{
 					{
 						tts.speak(""+tags.get(i).value, TextToSpeech.QUEUE_FLUSH, null);
 					}
-//					else
-//						tts.stop();
-					//Log.i( "nearestPOI.getTags()" , "key = "+ tags.get(i).key + " ; value = " + tags.get(i).value);
-					//Toast.makeText(getContext(), "Key = "+ tags.get(i).key , Toast.LENGTH_SHORT).show() ; //+ " value = " + tags.get(i).value
 				}
 			}
 			break;
@@ -241,7 +237,4 @@ public class GeoTabMapView extends MapView{
 		out = false;
 		}
 	}
-	
-	
-	
 }
