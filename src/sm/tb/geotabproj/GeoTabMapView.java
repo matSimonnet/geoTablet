@@ -55,6 +55,8 @@ public class GeoTabMapView extends MapView{
 	public boolean onTouchEvent (MotionEvent event){
 		super.onTouchEvent(event);
 	
+		Log.i("mapScale / mapScaleQuery / ", "" + mapScale + "/" + mapScaleQuery);
+		
 		int action = event.getAction() & MotionEvent.ACTION_MASK;
 		
 		switch (action) {

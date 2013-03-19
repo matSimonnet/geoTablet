@@ -15,6 +15,7 @@ import android.speech.tts.TextToSpeech.OnInitListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -61,7 +62,7 @@ public class Geotab_activity extends MapActivity {
         geoTabMapView = new GeoTabMapView(this);
         
         // Gives file to geoTabMapView
-        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/" + folder + "/" + map + ".map"));
+//        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/" + folder + "/" + map + ".map"));
 //        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/bretagne.map"));
 //        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/midi-pyrenees.map"));
         geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
@@ -78,7 +79,9 @@ public class Geotab_activity extends MapActivity {
 //        mapController.setCenter(new GeoPoint(5.0, 30.0));
         //Burkina
         mapController.setCenter(new GeoPoint(12.36, -1.53));
-		
+        //Brest defaulf
+//		mapController.setCenter(new GeoPoint(48.40, -4.5));
+   
         // Set map scale
         mapController.setZoom(geoTabMapView.mapScale);
         
@@ -91,6 +94,50 @@ public class Geotab_activity extends MapActivity {
 		
     }
 
+	//action bar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	getMenuInflater().inflate(R.menu.actionbar, menu);
+    	return super.onCreateOptionsMenu(menu);	
+    }
+    
+    //item de l'action bar
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){	
+    	switch (item.getItemId()) {
+		//map management
+    	case R.id.map1:
+			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
+			mapController.setCenter(new GeoPoint(12.36, -1.53));
+			geoTabMapView.mapScale=9;
+			mapController.setZoom(geoTabMapView.mapScale);
+			return true;
+		case R.id.map2:
+			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/bretagne.map"));
+			mapController.setCenter(new GeoPoint(48.40, -4.5));
+			geoTabMapView.mapScale=14;
+			mapController.setZoom(geoTabMapView.mapScale);
+			return true;
+		case R.id.map3:
+			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/" + folder + "/" + map + ".map"));
+			mapController.setCenter(new GeoPoint(48.4426, -4.778));
+			geoTabMapView.mapScale=18;
+			mapController.setZoom(geoTabMapView.mapScale);
+			return true;
+		//scale management
+		case R.id.scaleUp:
+			geoTabMapView.mapScale = geoTabMapView.mapScale+1;
+			mapController.setZoom(geoTabMapView.mapScale);
+			return true;
+		case R.id.scaleDown:
+			geoTabMapView.mapScale = geoTabMapView.mapScale-1;
+			mapController.setZoom(geoTabMapView.mapScale);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+    }
+    
 	public TextToSpeech getTts() {
 		return tts;
 	}
@@ -98,13 +145,6 @@ public class Geotab_activity extends MapActivity {
 	public void setTts(TextToSpeech tts) {
 		this.tts = tts;
 	}
-
-	
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-    	getMenuInflater().inflate(R.menu.actionbar, menu);
-    	return super.onCreateOptionsMenu(menu);	
-    }
 	
 	@Override
 	protected void onDestroy() {
