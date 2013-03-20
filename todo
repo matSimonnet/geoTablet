@@ -1,13 +1,12 @@
 TodoList
 
+priorité : 
+* gestion du touchEvent quand à la fin du contact nearestPOI != null
+- récupérer la liste des éléments à afficher. 
+- ajouter des sons aux contacts
 - faire la fonction retrieveTile(X,Y,zoom)
 
-- dessiner les rayons des éléments affichere
-* gestion du touchEvent quand à la fin du contact nearestPOI != null
 - ajouter les ways
 - ajouter le second doigt
-- ajouter des sons aux contacts
-- menu pour voir toutes les données présentes et sélectionner
 
 - faire une fonction pour liste un ordre d'annonce des tags
-

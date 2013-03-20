@@ -12,6 +12,7 @@ import org.mapsforge.map.reader.MapDatabase;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.location.Location;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.util.Log;
@@ -21,18 +22,19 @@ import android.view.MotionEvent;
 public class GeoTabMapView extends MapView{
 	
 	//caution : treshold should be relative to the scale
-	final int nodeRadiusTreshold = 120;
+	final int nodeRadiusTreshold = 80;
 	String lastAnnounce = "";
 	MapDatabase mapDatabase;
 	private GeoTabMapDatabaseCallback callback = null;
+
 	public TextToSpeech tts = null; 
 	public TextToSpeech ttsOutOfMap = null; 
 	private boolean out = false;
 	
 	//View Scale
-	public float viewScale = (float)1.2;
+	public float viewScale = (float)1.0;
 	//Tile Scale
-	public int mapScale = 9;
+	public int mapScale = 18;
 	//Tile Scale for executeQuery
 	public int mapScaleQuery = mapScale-2;
 	
@@ -54,8 +56,6 @@ public class GeoTabMapView extends MapView{
 	@Override
 	public boolean onTouchEvent (MotionEvent event){
 		super.onTouchEvent(event);
-	
-		Log.i("mapScale / mapScaleQuery / ", "" + mapScale + "/" + mapScaleQuery);
 		
 		int action = event.getAction() & MotionEvent.ACTION_MASK;
 		
@@ -139,7 +139,8 @@ public class GeoTabMapView extends MapView{
 	
 	// Recuperation du POI le plus proche
 	public PointOfInterest getNearestPOI(List<PointOfInterest> pois, GeoPoint origine) {
-	    double distanceMin = 0;
+	    
+		double distanceMin = 0;
 	    PointOfInterest poiNearest = null;
 	    
 	    // Get Projection
@@ -147,8 +148,10 @@ public class GeoTabMapView extends MapView{
 	    
 	    // Valeur en pixel de origine
 	    Point posOrigine = new Point();
+	    //Log.i("Dist","" + posOrigine.x + " : "+ posOrigine.y + "ORIGINE" + origine.getLatitude() + " / " + origine.getLongitude());
+	    
 		projection.toPixels(origine, posOrigine);
-		//Log.i("Dist","" + posOrigine.x + " : "+ posOrigine.y);
+		//Log.i("Dist","" + posOrigine.x + " : "+ posOrigine.y + "ORIGINE" + origine.getLatitude() + " / " + origine.getLongitude());
 	    
 		if (pois.size() > 0) 
 		{
@@ -214,6 +217,45 @@ public class GeoTabMapView extends MapView{
 		distance = Math.sqrt( ((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)) );
 		return distance;
 	}
+	
+	//Fonction pour convertir le rayon pixel en metre
+	public float convertRadiusToMeters(GeoPoint geo){
+		
+    Point circleCenter = new Point();
+    Point circleBorder = new Point();
+    
+    // Get Projection
+    Projection projection = this.getProjection();
+    
+    // Calculate center in pixels
+    projection.toPixels(geo, circleCenter);
+//    Log.i("CIRCLECENTER", "circleCenter.x = " + circleCenter.x + "  / circleCenter.y = " + circleCenter.y);
+    
+    //calculate border in pixels
+    circleBorder.x = circleCenter.x + nodeRadiusTreshold; 
+    circleBorder.y = circleCenter.y;
+//    Log.i("CIRCLEBORDER", "circleBorder.x = " + circleBorder.x + "  / circleBorder.y = " + circleBorder.y);
+     
+    //calculate geoBorder 
+    GeoPoint geoBorder = new GeoPoint(	projection.fromPixels(circleBorder.x, circleBorder.y).getLatitude(), 
+    									projection.fromPixels(circleBorder.x, circleBorder.y).getLongitude()); 
+//    Log.i("GEOBORDER", " lat = " + geoBorder.getLatitude() + " ; long = " + geoBorder.getLongitude());
+    
+    //calculate distance in meters
+    Location locationA = new Location("point A");
+    locationA.setLatitude(geo.getLatitude());
+    locationA.setLongitude(geo.getLongitude());
+    
+    Location locationB = new Location("point B");
+    locationB.setLatitude(geoBorder.getLatitude());
+    locationB.setLongitude(geoBorder.getLongitude());
+    
+    double distance = locationA.distanceTo(locationB);
+    Log.w("DISTANCE", "" + distance); 
+    
+    return (float)distance; 
+	}
+	
 	
 	//Function to announce Out of maps
 	public void outOfMap(float x, float y){

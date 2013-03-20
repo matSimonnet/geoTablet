@@ -4,10 +4,14 @@ import java.io.File;
 
 import org.mapsforge.android.maps.MapActivity;
 import org.mapsforge.android.maps.MapController;
+import org.mapsforge.android.maps.overlay.ArrayCircleOverlay;
+import org.mapsforge.android.maps.overlay.OverlayCircle;
 import org.mapsforge.core.GeoPoint;
 
 import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Environment;
 import android.speech.tts.TextToSpeech;
@@ -16,8 +20,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.WindowManager;
 
 @SuppressLint("SdCardPath")
 public class Geotab_activity extends MapActivity {
@@ -31,7 +33,13 @@ public class Geotab_activity extends MapActivity {
 	private String map = "porsman";
 	
 	static public DisplayMetrics displaymetrics = null;
-
+	
+	private GeoPoint mapCenter;
+	private float nodeRadiusInMeter = 0;
+	
+	private ArrayCircleOverlay circleOverlay;
+	OverlayCircle circle;
+	
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,11 +49,15 @@ public class Geotab_activity extends MapActivity {
 		displaymetrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         
-    	// Set Full screen landscape
+    	//set Full screen landscape
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		
+		//hide actionBar (up)
 		//requestWindowFeature(Window.FEATURE_NO_TITLE);
-		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+		
+		//hide menuBar (bottom)
+		//this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
         
         // Write raw ressources less than 1MB on the device SDCard
         MapSDWriter.write( getResources().openRawResource(R.raw.porsman), folder, map);
@@ -57,15 +69,15 @@ public class Geotab_activity extends MapActivity {
     		}
     	};
     	tts = new TextToSpeech(this, onInitListener);
-        
+    	
         // Creates mapView instance
         geoTabMapView = new GeoTabMapView(this);
         
         // Gives file to geoTabMapView
 //        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/" + folder + "/" + map + ".map"));
-//        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/bretagne.map"));
+        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/bretagne.map"));
 //        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/midi-pyrenees.map"));
-        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
+//        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
 
         // Retrieve geoTabMapView mapController  
         mapController = geoTabMapView.getController();
@@ -78,9 +90,11 @@ public class Geotab_activity extends MapActivity {
         //Africa
 //        mapController.setCenter(new GeoPoint(5.0, 30.0));
         //Burkina
-        mapController.setCenter(new GeoPoint(12.36, -1.53));
+//        mapController.setCenter(new GeoPoint(12.36, -1.53));
         //Brest defaulf
 //		mapController.setCenter(new GeoPoint(48.40, -4.5));
+        //TB
+		mapController.setCenter(new GeoPoint(48.358855, -4.570278));
    
         // Set map scale
         mapController.setZoom(geoTabMapView.mapScale);
@@ -89,10 +103,41 @@ public class Geotab_activity extends MapActivity {
 	    // Set view scale
         geoTabMapView.setScaleX(geoTabMapView.viewScale);
         geoTabMapView.setScaleY(geoTabMapView.viewScale);
-       
-        //Fill view;
+        
+        // set view parameter
+//        geoTabMapView.setClickable(true);
+//        geoTabMapView.setBuiltInZoomControls(true);
+        
+        //Fill view
         setContentView(geoTabMapView);
-		
+        
+        // create a point to be used in overlay
+        mapCenter = new GeoPoint(48.358855, -4.570278);
+        
+        // create 
+//        nodeRadiusInMeter = geoTabMapView.convertRadiusToMeters(this.mapCenter);
+//        Log.i("NODERADIUSINMETER", ""+nodeRadiusInMeter);
+        
+ 
+        // create the default paint objects for overlay circles
+        Paint circleDefaultPaintFill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        circleDefaultPaintFill.setStyle(Paint.Style.FILL);
+        circleDefaultPaintFill.setColor(Color.BLUE);
+        circleDefaultPaintFill.setAlpha(64);
+ 
+        Paint circleDefaultPaintOutline = new Paint(Paint.ANTI_ALIAS_FLAG);
+        circleDefaultPaintOutline.setStyle(Paint.Style.STROKE);
+        circleDefaultPaintOutline.setColor(Color.BLUE);
+        circleDefaultPaintOutline.setAlpha(128);
+        circleDefaultPaintOutline.setStrokeWidth(3);
+ 
+        // create the CircleOverlay and add the circles
+        circleOverlay = new ArrayCircleOverlay(circleDefaultPaintFill,circleDefaultPaintOutline);
+        circle = new OverlayCircle(this.mapCenter, nodeRadiusInMeter , "first overlay"); //radios in meter
+        circleOverlay.addCircle(circle);
+ 
+        // add all overlays to the MapView
+        geoTabMapView.getOverlays().add(circleOverlay);        
     }
 
 	//action bar
@@ -109,19 +154,22 @@ public class Geotab_activity extends MapActivity {
 		//map management
     	case R.id.map1:
 			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
-			mapController.setCenter(new GeoPoint(12.36, -1.53));
+			mapCenter = new GeoPoint(12.36, -1.53);
+			mapController.setCenter(mapCenter);
 			geoTabMapView.mapScale=9;
 			refreshMapViewScales();
 			return true;
 		case R.id.map2:
 			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/bretagne.map"));
-			mapController.setCenter(new GeoPoint(48.40, -4.5));
+			mapCenter = new GeoPoint(48.40, -4.5);
+			mapController.setCenter(mapCenter);
 			geoTabMapView.mapScale=14;
 			refreshMapViewScales();
 			return true;
 		case R.id.map3:
 			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/" + folder + "/" + map + ".map"));
-			mapController.setCenter(new GeoPoint(48.4426, -4.778));
+			mapCenter = new GeoPoint(48.4426, -4.778);
+			mapController.setCenter(mapCenter);
 			geoTabMapView.mapScale=18;
 			refreshMapViewScales();
 			return true;
@@ -142,6 +190,8 @@ public class Geotab_activity extends MapActivity {
     public void refreshMapViewScales(){
 		geoTabMapView.mapScaleQuery = geoTabMapView.mapScale-2;
 		mapController.setZoom(geoTabMapView.mapScale);
+		nodeRadiusInMeter = geoTabMapView.convertRadiusToMeters(this.mapCenter);
+		circle.setCircleData(mapCenter, nodeRadiusInMeter);		
     }
     
 	public TextToSpeech getTts() {
