@@ -102,7 +102,7 @@ public class Geotab_activity extends MapActivity {
     	return super.onCreateOptionsMenu(menu);	
     }
     
-    //item de l'action bar
+    //action bar items
     @Override
     public boolean onOptionsItemSelected(MenuItem item){	
     	switch (item.getItemId()) {
@@ -111,37 +111,37 @@ public class Geotab_activity extends MapActivity {
 			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
 			mapController.setCenter(new GeoPoint(12.36, -1.53));
 			geoTabMapView.mapScale=9;
-			geoTabMapView.mapScaleQuery = geoTabMapView.mapScale-2;
-			mapController.setZoom(geoTabMapView.mapScale);
+			refreshMapViewScales();
 			return true;
 		case R.id.map2:
 			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/bretagne.map"));
 			mapController.setCenter(new GeoPoint(48.40, -4.5));
 			geoTabMapView.mapScale=14;
-			geoTabMapView.mapScaleQuery = geoTabMapView.mapScale-2;
-			mapController.setZoom(geoTabMapView.mapScale);
+			refreshMapViewScales();
 			return true;
 		case R.id.map3:
 			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/" + folder + "/" + map + ".map"));
 			mapController.setCenter(new GeoPoint(48.4426, -4.778));
 			geoTabMapView.mapScale=18;
-			geoTabMapView.mapScaleQuery = geoTabMapView.mapScale-2;
-			mapController.setZoom(geoTabMapView.mapScale);
+			refreshMapViewScales();
 			return true;
 		//scale management
 		case R.id.scaleUp:
 			if (geoTabMapView.mapScale < 18) geoTabMapView.mapScale = geoTabMapView.mapScale+1;
-			geoTabMapView.mapScaleQuery = geoTabMapView.mapScale-2;
-			mapController.setZoom(geoTabMapView.mapScale);
+			refreshMapViewScales();
 			return true;
 		case R.id.scaleDown:
 			if (geoTabMapView.mapScale > 1)geoTabMapView.mapScale = geoTabMapView.mapScale-1;
-			geoTabMapView.mapScaleQuery = geoTabMapView.mapScale-2;
-			mapController.setZoom(geoTabMapView.mapScale);
+			refreshMapViewScales();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+    }
+    
+    public void refreshMapViewScales(){
+		geoTabMapView.mapScaleQuery = geoTabMapView.mapScale-2;
+		mapController.setZoom(geoTabMapView.mapScale);
     }
     
 	public TextToSpeech getTts() {
