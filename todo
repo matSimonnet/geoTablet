@@ -2,7 +2,7 @@ TodoList
 
 priorité : 
 * gestion du touchEvent quand à la fin du contact nearestPOI != null
-- récupérer la liste des éléments à afficher. 
+-> récupérer la liste des éléments à afficher. 
 - ajouter des sons aux contacts
 - faire la fonction retrieveTile(X,Y,zoom)
 

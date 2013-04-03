@@ -6,6 +6,8 @@ import java.util.List;
 import org.mapsforge.core.Tag;
 import org.mapsforge.map.reader.MapDatabaseCallback;
 
+import android.util.Log;
+
 public class GeoTabMapDatabaseCallback implements MapDatabaseCallback{
 	
 	public List<PointOfInterest> pois = new ArrayList<PointOfInterest>();

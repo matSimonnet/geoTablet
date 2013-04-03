@@ -25,7 +25,7 @@ public class GeoTabMapView extends MapView{
 	final int nodeRadiusTreshold = 80;
 	String lastAnnounce = "";
 	MapDatabase mapDatabase;
-	private GeoTabMapDatabaseCallback callback = null;
+	public GeoTabMapDatabaseCallback callback = null;
 
 	public TextToSpeech tts = null; 
 	public TextToSpeech ttsOutOfMap = null; 

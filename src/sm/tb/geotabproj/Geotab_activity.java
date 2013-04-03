@@ -4,9 +4,12 @@ import java.io.File;
 
 import org.mapsforge.android.maps.MapActivity;
 import org.mapsforge.android.maps.MapController;
+import org.mapsforge.android.maps.Projection;
 import org.mapsforge.android.maps.overlay.ArrayCircleOverlay;
 import org.mapsforge.android.maps.overlay.OverlayCircle;
 import org.mapsforge.core.GeoPoint;
+import org.mapsforge.core.MercatorProjection;
+import org.mapsforge.core.Tile;
 
 import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
@@ -39,6 +42,8 @@ public class Geotab_activity extends MapActivity {
 	
 	private ArrayCircleOverlay circleOverlay;
 	OverlayCircle circle;
+	
+	private GeoPoint node2Touch[] = new GeoPoint[100];
 	
 	
 	@Override
@@ -189,6 +194,19 @@ public class Geotab_activity extends MapActivity {
     
     public void refreshMapViewScales(){
 		geoTabMapView.mapScaleQuery = geoTabMapView.mapScale-2;
+		long tileY = MercatorProjection.latitudeToTileY( mapCenter.getLatitude() , (byte) geoTabMapView.mapScaleQuery);
+		long tileX = MercatorProjection.longitudeToTileX( mapCenter.getLongitude(), (byte) geoTabMapView.mapScaleQuery);
+		Tile tile = new Tile(tileX, tileY, (byte) geoTabMapView.mapScaleQuery);
+		geoTabMapView.mapDatabase.executeQuery(tile, geoTabMapView.callback);	
+		Log.i("SIZE", "" + geoTabMapView.callback.pois.size());
+		
+		for(int i = 1; i<geoTabMapView.callback.pois.size();i++){
+		node2Touch[i] = new GeoPoint(geoTabMapView.callback.pois.get(i).getLatitude(),geoTabMapView.callback.pois.get(i).getLongitude() );
+		Log.i("NODE2TOUCH", "NODE2TOUCH_" + i + " = " +  geoTabMapView.callback.pois.get(i).getTags().toString() 
+			 //+ "Lat = "	+  node2Touch[i].getLatitude() + " Long = " +  node2Touch[i].getLongitude() );
+				+ "Lat = "	+  geoTabMapView.callback.pois.get(i).getLatitude()*Math.pow(10, -6) + geoTabMapView.callback.pois.get(i).getLongitude()*Math.pow(10, -6) );
+		}
+		
 		mapController.setZoom(geoTabMapView.mapScale);
 		nodeRadiusInMeter = geoTabMapView.convertRadiusToMeters(this.mapCenter);
 		circle.setCircleData(mapCenter, nodeRadiusInMeter);		
