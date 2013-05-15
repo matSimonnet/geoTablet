@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.mapsforge.android.maps.MapView;
 import org.mapsforge.android.maps.Projection;
+import org.mapsforge.android.maps.overlay.ArrayCircleOverlay;
+import org.mapsforge.android.maps.overlay.OverlayCircle;
 import org.mapsforge.core.GeoPoint;
 import org.mapsforge.core.MercatorProjection;
 import org.mapsforge.core.Tag;
@@ -11,6 +13,8 @@ import org.mapsforge.core.Tile;
 import org.mapsforge.map.reader.MapDatabase;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.location.Location;
 import android.speech.tts.TextToSpeech;
@@ -21,11 +25,16 @@ import android.view.MotionEvent;
 
 public class GeoTabMapView extends MapView{
 	
-	//caution : treshold should be relative to the scale
-	final int nodeRadiusTreshold = 80;
+	//treshold to launch vocal announce
+	final int nodeRadiusTreshold = 100;
+	private int fingerNodeRadius = 0;
+	
 	String lastAnnounce = "";
 	MapDatabase mapDatabase;
 	public GeoTabMapDatabaseCallback callback = null;
+	public String tagKeyCurrent = "";
+	public String tagValueCurrent = "";
+
 
 	public TextToSpeech tts = null; 
 	public TextToSpeech ttsOutOfMap = null; 
@@ -33,11 +42,22 @@ public class GeoTabMapView extends MapView{
 	
 	//View Scale
 	public float viewScale = (float)1.0;
-	//Tile Scale
-	public int mapScale = 18;
-	//Tile Scale for executeQuery
-	public int mapScaleQuery = mapScale-2;
 	
+	//Tile Scale
+	private int mapScale = 12;
+	
+	public int getMapScale() {
+		return mapScale;
+	}
+
+	public void setMapScale(int mapScale) {
+		this.mapScale = mapScale;
+	}
+
+	private ArrayCircleOverlay circleOverlay;
+	private OverlayCircle circle;
+
+
 	public GeoTabMapView(Context context) {
 		super(context);	
 		callback = new GeoTabMapDatabaseCallback(this);
@@ -50,6 +70,19 @@ public class GeoTabMapView extends MapView{
 		};
 		tts = new TextToSpeech(getContext(), onInitListener);
 		ttsOutOfMap = new TextToSpeech(getContext(), onInitListener);
+	
+	    Paint circleDefaultPaintFill = new Paint(Paint.ANTI_ALIAS_FLAG);
+	    circleDefaultPaintFill.setColor(Color.YELLOW);
+	    circleDefaultPaintFill.setAlpha(60);
+
+	    Paint circleDefaultPaintOutline = new Paint(Paint.ANTI_ALIAS_FLAG);
+	    circleDefaultPaintOutline.setStyle(Paint.Style.STROKE);
+	    circleDefaultPaintOutline.setColor(Color.RED);
+	    circleDefaultPaintOutline.setAlpha(60);
+	    circleDefaultPaintOutline.setStrokeWidth(10);
+	    
+	    circleOverlay = new ArrayCircleOverlay(circleDefaultPaintFill,circleDefaultPaintOutline);
+	    this.getOverlays().add(circleOverlay);
 	}
 	
 
@@ -64,9 +97,11 @@ public class GeoTabMapView extends MapView{
 			outOfMap(event.getX(), event.getY());
 //			Log.i("action", "MotionEvent.ACTION_DOWN");
 			Projection projection = this.getProjection();
-			long tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScaleQuery);
-			long tileX = MercatorProjection.longitudeToTileX( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude(), (byte) mapScaleQuery);
-			Tile tile = new Tile(tileX, tileY, (byte) mapScaleQuery);
+			long tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScale);
+			long tileX = MercatorProjection.longitudeToTileX( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude(), (byte) mapScale);
+			Tile tile = new Tile(tileX, tileY, (byte) mapScale);
+			Log.w("tileXMOVE", "" + tileX);
+			Log.w("tileYMOVE", "" + tileY);
 			this.mapDatabase.executeQuery(tile, this.callback);
 			PointOfInterest nearestPOI = getNearestPOI(this.callback.pois , projection.fromPixels((int)event.getX(0), (int)event.getY(0)));		
 			if (nearestPOI != null) 
@@ -80,6 +115,30 @@ public class GeoTabMapView extends MapView{
 					}
 				}
 			}
+
+			Log.i("this.callback.pois.size()", "" + this.callback.pois.size());
+			
+			/*
+			try {
+				circleOverlay.clear();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} 
+				for (int i = 0; i < this.callback.pois.size() ; i++)
+				{
+				Log.i("this.callback.pois.get(i).getLatitude()", ""+ this.callback.pois.get(i).getLatitude()*Math.pow(10, -6));
+				Log.i("this.callback.pois.get(i).getLatitude()", ""+ this.callback.pois.get(i).getLongitude()*Math.pow(10, -6));
+				circle = new OverlayCircle(		new GeoPoint(
+													this.callback.pois.get(i).getLatitude()*Math.pow(10, -6), 
+													this.callback.pois.get(i).getLongitude()*Math.pow(10, -6)), 
+												this.convertRadiusToMeters(new GeoPoint(
+													this.callback.pois.get(i).getLatitude()*Math.pow(10, -6), 
+													this.callback.pois.get(i).getLongitude()*Math.pow(10, -6)))  , 
+												"first overlay"); //radios in meter
+				circleOverlay.addCircle(circle);
+				}
+				*/
+			
 			break;
 		
 		case MotionEvent.ACTION_UP:
@@ -93,9 +152,9 @@ public class GeoTabMapView extends MapView{
 			outOfMap(event.getX(), event.getY());
 //			Log.i("action", "MotionEvent.ACTION_MOVE");
 			projection = this.getProjection();
-			tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScaleQuery);
-			tileX = MercatorProjection.longitudeToTileX( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude(), (byte) mapScaleQuery);
-			tile = new Tile(tileX, tileY, (byte) mapScaleQuery);
+			tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScale);
+			tileX = MercatorProjection.longitudeToTileX( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude(), (byte) mapScale);
+			tile = new Tile(tileX, tileY, (byte) mapScale);
 			this.mapDatabase.executeQuery(tile, this.callback);
 //			Log.i("getNearestPOI", "this.callback.pois.size = " + this.callback.pois.size());
 			nearestPOI = getNearestPOI(this.callback.pois , projection.fromPixels((int)event.getX(0), (int)event.getY(0)));		
@@ -117,8 +176,15 @@ public class GeoTabMapView extends MapView{
 				lastAnnounce = "";
 				tts.stop();
 			}
-			
+		
 			this.callback.pois.clear();
+			
+			circle = new OverlayCircle(		new GeoPoint(
+					projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), 
+					projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude()), 
+					this.fingerNodeRadius , "first overlay"); //radios in meter
+			circleOverlay.addCircle(circle);
+			
 				break;
 				// LE BON ALGO POUR LES ANNONCES <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 				
@@ -251,7 +317,8 @@ public class GeoTabMapView extends MapView{
     locationB.setLongitude(geoBorder.getLongitude());
     
     double distance = locationA.distanceTo(locationB);
-    Log.w("DISTANCE", "" + distance); 
+    this.fingerNodeRadius = (int)(distance/6); 
+   // Log.w("DISTANCE", "" + distance); 
     
     return (float)distance; 
 	}
@@ -259,16 +326,16 @@ public class GeoTabMapView extends MapView{
 	
 	//Function to announce Out of maps
 	public void outOfMap(float x, float y){
-		int ratio = 7;
+		int ratio = 20;
 		float height = Geotab_activity.displaymetrics.heightPixels;
 		float width = Geotab_activity.displaymetrics.widthPixels;
 
 		if (!out){	
-			if ( ( x<width/ratio || x>width-width/ratio || y<height/(ratio-2) || y>height-height/(ratio-2) )
+			if ( ( x<width/(ratio) || x>width-width/(ratio) || y<height/(ratio) || y>height-height/(ratio-12) )
 					&& !ttsOutOfMap.isSpeaking() ){
-				ttsOutOfMap.speak("Hors Carte", TextToSpeech.QUEUE_FLUSH , null);
-				ttsOutOfMap.playSilence(1000, TextToSpeech.QUEUE_ADD, null);
-				Log.i("OutOfMap", "Hors Carte ##> " + y);
+				ttsOutOfMap.speak("Bord de la Carte", TextToSpeech.QUEUE_FLUSH , null);
+				ttsOutOfMap.playSilence(2000, TextToSpeech.QUEUE_ADD, null);
+				Log.i("OutOfMap", "Bord de la Carte ##> " + y);
 				out = true;
 			}	
 		}//end of if (!out)

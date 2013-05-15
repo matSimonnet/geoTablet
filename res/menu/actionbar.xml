@@ -10,7 +10,7 @@
             <item android:id="@+id/map2" 
                 android:title="bretagne"/>
             <item android:id="@+id/map3" 
-                android:title="porsman"/>
+                android:title="toulouse"/>
         </menu>
     </item>
    	<item 
@@ -22,6 +22,16 @@
    			    android:title="plus près"/>
    			<item android:id="@+id/scaleDown" 
    			    android:title="plus loin"/>
+   		</menu>
+   	</item>
+   	<item android:id="@+id/objects" android:title="objets" android:showAsAction="ifRoom">
+   		<menu>
+   			<item android:id="@+id/item1" android:title="métropoles"/>
+   			<item android:id="@+id/item2" android:title="villes"/>
+   			<item android:id="@+id/item3" android:title="villages"/>
+   			<item android:id="@+id/item4" android:title="quartiers"/>
+   			<item android:id="@+id/item5" android:title="arrêts de bus"/>
+   			<item android:id="@+id/item6" android:title="gares"/>
    		</menu>
    	</item>
 </menu>

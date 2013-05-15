@@ -26,12 +26,34 @@ public class GeoTabMapDatabaseCallback implements MapDatabaseCallback{
 		for (int i = 0; i < tags.size(); i++)	{
 			poi.addTag(tags.get(i).key, tags.get(i).value);
 //			Log.i("renderPointOfInterest", "key = " + tags.get(i).key.toString() + " // value = " + tags.get(i).value.toString());
-			if (tags.get(i).key.equals("place") && tags.get(i).value.equals("city")){ //&& tags.get(i).key.equals("station") 
+			if (tags.get(i).key.equals("place") && 
+					(
+							tags.get(i).value.equals("town") ||
+							tags.get(i).value.equals("city") ||
+							tags.get(i).value.equals("village") ||
+							tags.get(i).value.equals("hamlet")
+					)
+							){ //&& tags.get(i).key.equals("station") 
+//				pois.add(poi);
+//				for (int iP = 0; iP < pois.size(); iP++){
+//					Log.i("pois" + i , pois.get(iP).getTags().toString() + "" );
+//				}
+			}//end of if
+			if (tags.get(i).key.equals("railway") && tags.get(i).value.equals("station")){ // 
+//				pois.add(poi);
+//				for (int iP = 0; iP < pois.size(); iP++){
+//					Log.i("pois" + i , pois.get(iP).getTags().toString() + "" );
+//				}
+			}//end of if
+			
+			if (tags.get(i).key.equals(geoTabMapView.tagKeyCurrent) && tags.get(i).value.equals(geoTabMapView.tagValueCurrent)){ // 
 				pois.add(poi);
 //				for (int iP = 0; iP < pois.size(); iP++){
 //					Log.i("pois" + i , pois.get(iP).getTags().toString() + "" );
 //				}
 			}//end of if
+			
+			
 		}
 	}
 
