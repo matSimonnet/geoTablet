@@ -1,9 +1,6 @@
 package sm.tb.geotabproj;
 
 import java.io.File;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.mapsforge.android.maps.MapActivity;
 import org.mapsforge.android.maps.MapController;
@@ -14,7 +11,6 @@ import org.mapsforge.core.MercatorProjection;
 import org.mapsforge.core.Tag;
 import org.mapsforge.core.Tile;
 
-import android.R.string;
 import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
@@ -44,9 +40,6 @@ private float nodeRadiusInMeter = 0;
 
 	private TextToSpeech tts = null;
 		
-	private String folder = "map";
-	private String map = "porsman";
-	
 	private GeoPoint mapCenter;
 	
 	private ArrayCircleOverlay circleOverlay;
@@ -64,16 +57,6 @@ private float nodeRadiusInMeter = 0;
         
     	//set Full screen landscape
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-		
-		//hide actionBar (up)
-		//requestWindowFeature(Window.FEATURE_NO_TITLE);
-		
-		//hide menuBar (bottom)
-//		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//      getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
-        	
-        // Write raw ressources less than 1MB on the device SDCard
-        MapSDWriter.write( getResources().openRawResource(R.raw.porsman), folder, map);
     	
         // Init Text-to-Speech
         OnInitListener onInitListener = new OnInitListener() {
@@ -86,28 +69,18 @@ private float nodeRadiusInMeter = 0;
         // Creates mapView instance
         geoTabMapView = new GeoTabMapView(this);
         
+        //Fill view
+        setContentView(geoTabMapView); 
+        
         // Gives file to geoTabMapView
-//        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/" + folder + "/" + map + ".map"));
-//        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/bretagne.map"));
-        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/midi-pyrenees.map"));
-//        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
+        geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
 
         // Retrieve geoTabMapView mapController  
         mapController = geoTabMapView.getController();
-		
-        // Set mapCenter
-        //Porsman
-//        mapController.setCenter(new GeoPoint(48.4426, -4.778));
-        //Toulouse
-        mapController.setCenter(new GeoPoint(43.6037, 1.441779));
-        //Africa
-//        mapController.setCenter(new GeoPoint(5.0, 30.0));
-        //Burkina
-//        mapController.setCenter(new GeoPoint(12.36, -1.53));
-        //Brest defaulf
-//		  mapController.setCenter(new GeoPoint(48.40, -4.5));
-        //TB
-//		mapController.setCenter(new GeoPoint(48.358855, -4.570278));
+
+        // Set mapCenter in Burkina
+        mapCenter = new GeoPoint(12.00, -1.53);
+        mapController.setCenter(mapCenter);
    
         // Set map scale
         mapController.setZoom(geoTabMapView.getMapScale());
@@ -121,18 +94,6 @@ private float nodeRadiusInMeter = 0;
 //        geoTabMapView.setClickable(true);
 //        geoTabMapView.setBuiltInZoomControls(true);
         
-        //Fill view
-        setContentView(geoTabMapView);
-        
-              
-        // create a point to be used in overlay
-        mapCenter = new GeoPoint(48.358855, -4.570278);
-        
-        // create 
-//        nodeRadiusInMeter = geoTabMapView.convertRadiusToMeters(this.mapCenter);
-//        Log.i("NODERADIUSINMETER", ""+nodeRadiusInMeter);
-        
- 
         // create the default paint objects for overlay circles
         Paint circleDefaultPaintFill = new Paint(Paint.ANTI_ALIAS_FLAG);
         circleDefaultPaintFill.setStyle(Paint.Style.FILL);
@@ -147,12 +108,9 @@ private float nodeRadiusInMeter = 0;
  
         // create the CircleOverlay and add the circles
         circleOverlay = new ArrayCircleOverlay(circleDefaultPaintFill,circleDefaultPaintOutline);
-        //circle = new OverlayCircle(this.mapCenter, nodeRadiusInMeter , "first overlay"); //radios in meter
-        //circleOverlay.addCircle(circle);
- 
+
         // add all overlays to the MapView
         geoTabMapView.getOverlays().add(circleOverlay);
-        
         
     }
 
@@ -168,35 +126,46 @@ private float nodeRadiusInMeter = 0;
     public boolean onOptionsItemSelected(MenuItem item){	
     	
     	switch (item.getItemId()) {
-		//map management
+		
+    	//Country management
     	case R.id.map1:
-			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
-			mapCenter = new GeoPoint(12.36, -1.53);
+			mapCenter = new GeoPoint(12, -1.53);
 			mapController.setCenter(mapCenter);
-			geoTabMapView.setMapScale(9);
+			geoTabMapView.setMapScale(8);
 			refreshMap();
 			return true;
 		case R.id.map2:
-			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/bretagne.map"));
-			mapCenter = new GeoPoint(48.40, -4.5);
-			mapController.setCenter(mapCenter);
-			geoTabMapView.setMapScale(14);
-			refreshMap();
 			return true;
 		case R.id.map3:
-			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/midi-pyrenees.map"));
-			mapCenter = new GeoPoint(43.6037, 1.441779);
-			mapController.setCenter(mapCenter);
-			geoTabMapView.setMapScale(12);
+			return true;
+		
+		//Obect management
+		case R.id.item1:
+			geoTabMapView.tagKeyCurrent = "place";
+			geoTabMapView.tagValueCurrent = "country";
 			refreshMap();
 			return true;
-//		case R.id.map3:
-//			geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/" + folder + "/" + map + ".map"));
-//			mapCenter = new GeoPoint(48.4426, -4.778);
-//			mapController.setCenter(mapCenter);
-//			geoTabMapView.setMapScale(18);
-//			refreshMapViewScales();
-//			return true;
+		case R.id.item2:
+			geoTabMapView.tagKeyCurrent = "place";
+			geoTabMapView.tagValueCurrent = "city";
+			refreshMap();
+			return true;
+		case R.id.item3:
+			geoTabMapView.tagKeyCurrent = "place";
+			geoTabMapView.tagValueCurrent = "town";
+			refreshMap();
+			return true;
+		case R.id.item4:
+			geoTabMapView.tagKeyCurrent = "place";
+			geoTabMapView.tagValueCurrent = "village";
+			refreshMap();
+			return true;
+		case R.id.item5:
+			geoTabMapView.tagKeyCurrent = "place";
+			geoTabMapView.tagValueCurrent = "hamlet";
+			refreshMap();
+			return true;
+			
 		//scale management
 		case R.id.scaleUp:
 			if (geoTabMapView.getMapScale() < 18) geoTabMapView.setMapScale(geoTabMapView.getMapScale()+1);
@@ -206,36 +175,7 @@ private float nodeRadiusInMeter = 0;
 			if (geoTabMapView.getMapScale() > 1)geoTabMapView.setMapScale(geoTabMapView.getMapScale()-1);
 			refreshMap();
 			return true;
-		case R.id.item1:
-			geoTabMapView.tagKeyCurrent = "place";
-			geoTabMapView.tagValueCurrent = "city";
-			refreshMap();
-			return true;
-		case R.id.item2:
-			geoTabMapView.tagKeyCurrent = "place";
-			geoTabMapView.tagValueCurrent = "town";
-			refreshMap();
-			return true;
-		case R.id.item3:
-			geoTabMapView.tagKeyCurrent = "place";
-			geoTabMapView.tagValueCurrent = "village";
-			refreshMap();
-			return true;
-		case R.id.item4:
-			geoTabMapView.tagKeyCurrent = "place";
-			geoTabMapView.tagValueCurrent = "hamlet";
-			refreshMap();
-			return true;
-		case R.id.item5:
-			geoTabMapView.tagKeyCurrent = "highway";
-			geoTabMapView.tagValueCurrent = "bus_station";
-			refreshMap();
-			return true;
-		case R.id.item6:
-			geoTabMapView.tagKeyCurrent = "railway";
-			geoTabMapView.tagValueCurrent = "station";
-			refreshMap();
-			return true;
+			
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -248,7 +188,9 @@ private float nodeRadiusInMeter = 0;
 //    	Log.w("geoTabMapView.getMapScale()", ""+geoTabMapView.getMapScale());
 //       	Log.w("geoTabMapView.getMapScaleQuery()", ""+geoTabMapView.getMapScaleQuery());
     	
-		nodeRadiusInMeter = geoTabMapView.convertRadiusToMeters(this.mapCenter); 	
+		nodeRadiusInMeter = geoTabMapView.convertRadiusToMeters(this.mapCenter); 
+//    	nodeRadiusInMeter = geoTabMapView.convertRadiusToMeters(geoTabMapView.mapDatabase.getMapFileInfo().mapCenter);
+    	
 
 		//clean POI callback and previous drawings
 		geoTabMapView.callback.pois.clear();

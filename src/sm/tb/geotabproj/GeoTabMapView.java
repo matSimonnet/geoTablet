@@ -27,7 +27,7 @@ public class GeoTabMapView extends MapView{
 	
 	//treshold to launch vocal announce
 	final int nodeRadiusTreshold = 100;
-	private int fingerNodeRadius = 0;
+	private int fingerNodeRadius = 0 ;
 	
 	String lastAnnounce = "";
 	MapDatabase mapDatabase;
@@ -41,10 +41,10 @@ public class GeoTabMapView extends MapView{
 	private boolean out = false;
 	
 	//View Scale
-	public float viewScale = (float)1.0;
-	
+	public float viewScale = (float)2.0;
+		
 	//Tile Scale
-	private int mapScale = 12;
+	private int mapScale = 8;
 	
 	public int getMapScale() {
 		return mapScale;
@@ -317,10 +317,10 @@ public class GeoTabMapView extends MapView{
     locationB.setLongitude(geoBorder.getLongitude());
     
     double distance = locationA.distanceTo(locationB);
-    this.fingerNodeRadius = (int)(distance/6); 
+    this.fingerNodeRadius = (int)((distance/10)/viewScale) ; 
    // Log.w("DISTANCE", "" + distance); 
     
-    return (float)distance; 
+    return (float)distance/viewScale  ; 
 	}
 	
 	

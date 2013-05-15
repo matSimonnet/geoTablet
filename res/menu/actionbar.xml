@@ -1,37 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item 
-        android:id="@+id/maps" 
-        android:title="cartes" 
-        android:showAsAction="ifRoom">
+        android:id="@+id/maps" android:title="pays" android:showAsAction="ifRoom">
         <menu>
-            <item android:id="@+id/map1" 
-                android:title="afrique"/>
-            <item android:id="@+id/map2" 
-                android:title="bretagne"/>
-            <item android:id="@+id/map3" 
-                android:title="toulouse"/>
+            <item android:id="@+id/map1" android:title="Burkina"/>
+            <item android:id="@+id/map2" android:title="disponible"/>
+            <item android:id="@+id/map3" android:title="disponible"/>
         </menu>
-    </item>
-   	<item 
-        android:id="@+id/scales" 
-        android:title="échelles" 
-        android:showAsAction="ifRoom">
+    </item> 	
+   	<item android:id="@+id/objects" android:title="Données affichés" android:showAsAction="ifRoom">
    		<menu>
-   			<item android:id="@+id/scaleUp" 
-   			    android:title="plus près"/>
-   			<item android:id="@+id/scaleDown" 
-   			    android:title="plus loin"/>
+   			<item android:id="@+id/item1" android:title="pays"/>
+   			<item android:id="@+id/item2" android:title="grandes villes"/>
+   			<item android:id="@+id/item3" android:title="villes"/>
+   			<item android:id="@+id/item4" android:title="villages"/>
+			<item android:id="@+id/item5" android:title="hameau"/>
    		</menu>
    	</item>
-   	<item android:id="@+id/objects" android:title="objets" android:showAsAction="ifRoom">
+   	<item 
+        android:id="@+id/scales" android:title="échelles" android:showAsAction="ifRoom">
    		<menu>
-   			<item android:id="@+id/item1" android:title="métropoles"/>
-   			<item android:id="@+id/item2" android:title="villes"/>
-   			<item android:id="@+id/item3" android:title="villages"/>
-   			<item android:id="@+id/item4" android:title="quartiers"/>
-   			<item android:id="@+id/item5" android:title="arrêts de bus"/>
-   			<item android:id="@+id/item6" android:title="gares"/>
+   			<item android:id="@+id/scaleUp" android:title="plus près"/>
+   			<item android:id="@+id/scaleDown" android:title="plus loin"/>
    		</menu>
    	</item>
 </menu>
