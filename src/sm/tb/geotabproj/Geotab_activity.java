@@ -17,8 +17,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Environment;
-import android.speech.tts.TextToSpeech;
-import android.speech.tts.TextToSpeech.OnInitListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
@@ -27,52 +25,34 @@ import android.view.MenuItem;
 @SuppressLint("SdCardPath")
 public class Geotab_activity extends MapActivity {
 	
-	static public DisplayMetrics displaymetrics = null;
-	
-private float nodeRadiusInMeter = 0;
-	
-	public float getNodeRadiusInMeter() {
-		return nodeRadiusInMeter;
-	}
-	
-	private GeoTabMapView geoTabMapView;
-	private MapController mapController;
-
-	private TextToSpeech tts = null;
-		
-	private GeoPoint mapCenter;
-	
-	private ArrayCircleOverlay circleOverlay;
-	private OverlayCircle circle;
-	
-	private Tag[] allTags = null;
+	// Variables declarations 
+	static public DisplayMetrics displaymetrics = null; // -> to get screensize in pixels
+	private float nodeRadiusInMeter; //-> to get the radius of a node in meters
+	private GeoTabMapView geoTabMapView; //->The MapView
+	private MapController mapController; // -> To control the MapView Center and scale
+	private GeoPoint mapCenter; // -> the center of the MapView
+	private ArrayCircleOverlay circleOverlay; // -> the circles list 
+	private OverlayCircle circle; // -> the overlay
+	private Tag[] allTags = null; // -> a table of tags to pick the list of the existing objects in the tiles of the current MapView 
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        //get screen size for out of map announce
+        // get screen size for out of map announce
 		displaymetrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         
-    	//set Full screen landscape
+    	// set screen landscape
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-    	
-        // Init Text-to-Speech
-        OnInitListener onInitListener = new OnInitListener() {
-    		@Override
-    		public void onInit(int status) {
-    		}
-    	};
-    	tts = new TextToSpeech(this, onInitListener);
-    	
-        // Creates mapView instance
+    
+        // creates MapView instance
         geoTabMapView = new GeoTabMapView(this);
         
-        //Fill view
+        // fill view
         setContentView(geoTabMapView); 
         
-        // Gives file to geoTabMapView
+        // gives file to geoTabMapView
         geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
 
         // Retrieve geoTabMapView mapController  
@@ -84,17 +64,12 @@ private float nodeRadiusInMeter = 0;
    
         // Set map scale
         mapController.setZoom(geoTabMapView.getMapScale());
-        //geoTabMapView.mapScaleQuery = geoTabMapView.mapScale;
         
 	    // Set view scale
         geoTabMapView.setScaleX(geoTabMapView.viewScale);
         geoTabMapView.setScaleY(geoTabMapView.viewScale);
         
-        // set view parameter
-//        geoTabMapView.setClickable(true);
-//        geoTabMapView.setBuiltInZoomControls(true);
-        
-        // create the default paint objects for overlay circles
+        // create the paint objects for overlay circles
         Paint circleDefaultPaintFill = new Paint(Paint.ANTI_ALIAS_FLAG);
         circleDefaultPaintFill.setStyle(Paint.Style.FILL);
         circleDefaultPaintFill.setColor(Color.BLUE);
@@ -106,7 +81,7 @@ private float nodeRadiusInMeter = 0;
         circleDefaultPaintOutline.setAlpha(128);
         circleDefaultPaintOutline.setStrokeWidth(3);
  
-        // create the CircleOverlay and add the circles
+        // create the CircleOverlay
         circleOverlay = new ArrayCircleOverlay(circleDefaultPaintFill,circleDefaultPaintOutline);
 
         // add all overlays to the MapView
@@ -114,23 +89,22 @@ private float nodeRadiusInMeter = 0;
         
     }
 
-	//action bar
+	//create action bar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
     	getMenuInflater().inflate(R.menu.actionbar, menu);
     	return super.onCreateOptionsMenu(menu);	
     }
     
-    //action bar items
+    //create action for action bar items
     @Override
     public boolean onOptionsItemSelected(MenuItem item){	
     	
     	switch (item.getItemId()) {
 		
-    	//Country management
+    	// country to display management
     	case R.id.map1:
 			mapCenter = new GeoPoint(12, -1.53);
-			mapController.setCenter(mapCenter);
 			geoTabMapView.setMapScale(8);
 			refreshMap();
 			return true;
@@ -139,7 +113,7 @@ private float nodeRadiusInMeter = 0;
 		case R.id.map3:
 			return true;
 		
-		//Obect management
+		// displayed objects management
 		case R.id.item1:
 			geoTabMapView.tagKeyCurrent = "place";
 			geoTabMapView.tagValueCurrent = "country";
@@ -166,7 +140,7 @@ private float nodeRadiusInMeter = 0;
 			refreshMap();
 			return true;
 			
-		//scale management
+		// scale management
 		case R.id.scaleUp:
 			if (geoTabMapView.getMapScale() < 18) geoTabMapView.setMapScale(geoTabMapView.getMapScale()+1);
 			refreshMap();
@@ -183,23 +157,26 @@ private float nodeRadiusInMeter = 0;
     
     public void refreshMap(){		
     	
-    	//set scales and size of circles
+    	// center the map
+    	mapController.setCenter(mapCenter);
+    	    	
+    	//apply the scale of the map
     	mapController.setZoom(geoTabMapView.getMapScale());
-//    	Log.w("geoTabMapView.getMapScale()", ""+geoTabMapView.getMapScale());
-//       	Log.w("geoTabMapView.getMapScaleQuery()", ""+geoTabMapView.getMapScaleQuery());
     	
+    	//adjust the radius for the node display
 		nodeRadiusInMeter = geoTabMapView.convertRadiusToMeters(this.mapCenter); 
-//    	nodeRadiusInMeter = geoTabMapView.convertRadiusToMeters(geoTabMapView.mapDatabase.getMapFileInfo().mapCenter);
-    	
 
-		//clean POI callback and previous drawings
+		//clean previous pois contents
 		geoTabMapView.callback.pois.clear();
+		
+		//clean previous overlay
 		circleOverlay.clear();
 		
-		//get the tile
+		//get the central tile
 		long tileX = MercatorProjection.longitudeToTileX( mapCenter.getLongitude(), (byte) geoTabMapView.getMapScale());
 		long tileY = MercatorProjection.latitudeToTileY( mapCenter.getLatitude() , (byte) geoTabMapView.getMapScale());
 		
+		//get the peripherical tiles
 		for (int i = 0; i < 4 ; i++  )
 			{
 			for (int j = 0; j < 4 ; j++)
@@ -208,14 +185,15 @@ private float nodeRadiusInMeter = 0;
 				Tile tileOpposite = new Tile( (tileX-i) , (tileY-j), (byte) (geoTabMapView.getMapScale() ) );
 				Tile tileOppositeBis = new Tile( (tileX+i) , (tileY-j), (byte) (geoTabMapView.getMapScale() ) );
 				Tile tileOppositeTer = new Tile( (tileX-i) , (tileY+j), (byte) (geoTabMapView.getMapScale() ) );
-				//get POI 
+				
+				//Fill pois content 
 				geoTabMapView.callback.pois.clear();
 				geoTabMapView.mapDatabase.executeQuery(tile, geoTabMapView.callback);
 				geoTabMapView.mapDatabase.executeQuery(tileOpposite, geoTabMapView.callback);
 				geoTabMapView.mapDatabase.executeQuery(tileOppositeBis, geoTabMapView.callback);
 				geoTabMapView.mapDatabase.executeQuery(tileOppositeTer, geoTabMapView.callback);
 				
-				//Draw		
+				// add pois from different tiles in the overlay 	
 				for(int k = 0; k < geoTabMapView.callback.pois.size(); k++)
 					{
 					circle = new OverlayCircle(new GeoPoint(geoTabMapView.callback.pois.get(k).getLatitude()*Math.pow(10, -6),
@@ -227,7 +205,7 @@ private float nodeRadiusInMeter = 0;
 				}//end of for j
 			}//end of for i
 		
-		//get tag
+		//display all object in logcat
 		allTags = geoTabMapView.mapDatabase.getMapFileInfo().poiTags;
 		for (int at = 0; at<allTags.length; at++ ){
 			Log.w("allTags", "key = " + allTags[at].key + "// value = " + allTags[at].value );
@@ -238,14 +216,6 @@ private float nodeRadiusInMeter = 0;
 		
 		
 		}//end of refreshmapscale()
-    
-	public TextToSpeech getTts() {
-		return tts;
-	}
-
-	public void setTts(TextToSpeech tts) {
-		this.tts = tts;
-	}
 	
 	@Override
 	protected void onDestroy() {

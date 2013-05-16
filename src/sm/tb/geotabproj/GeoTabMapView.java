@@ -94,6 +94,9 @@ public class GeoTabMapView extends MapView{
 		
 		switch (action) {
 		case MotionEvent.ACTION_DOWN:
+			
+			if (tagKeyCurrent.equals("")) tts.speak("sélectionner les données à afficher dans le menu en haut à droite", TextToSpeech.QUEUE_FLUSH, null);
+			
 			outOfMap(event.getX(), event.getY());
 //			Log.i("action", "MotionEvent.ACTION_DOWN");
 			Projection projection = this.getProjection();
@@ -143,8 +146,8 @@ public class GeoTabMapView extends MapView{
 		
 		case MotionEvent.ACTION_UP:
 //			Log.i("action", "MotionEvent.ACTION_UP");
-			tts.stop();
-			ttsOutOfMap.stop();
+			if (!tagKeyCurrent.equals("")) tts.stop();
+			if (!tagKeyCurrent.equals("")) ttsOutOfMap.stop();
 			out = false;
 				break;
 				
@@ -174,7 +177,7 @@ public class GeoTabMapView extends MapView{
 			else 
 			{
 				lastAnnounce = "";
-				tts.stop();
+				if (!tagKeyCurrent.equals("")) tts.stop();
 			}
 		
 			this.callback.pois.clear();
