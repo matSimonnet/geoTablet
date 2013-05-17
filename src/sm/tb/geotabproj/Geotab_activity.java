@@ -86,7 +86,6 @@ public class Geotab_activity extends MapActivity {
 
         // add all overlays to the MapView
         geoTabMapView.getOverlays().add(circleOverlay);
-        
     }
 
 	//create action bar
@@ -208,7 +207,7 @@ public class Geotab_activity extends MapActivity {
 		//display all object in logcat
 		allTags = geoTabMapView.mapDatabase.getMapFileInfo().poiTags;
 		for (int at = 0; at<allTags.length; at++ ){
-			Log.w("allTags", "key = " + allTags[at].key + "// value = " + allTags[at].value );
+			Log.i("allTags", "key = " + allTags[at].key + "// value = " + allTags[at].value );
 		}
 		
 		//clean 
@@ -219,7 +218,6 @@ public class Geotab_activity extends MapActivity {
 	
 	@Override
 	protected void onDestroy() {
-		Log.i("GeoTabActivity","onDestroy()");
 		if (geoTabMapView.tts != null){
 			geoTabMapView.tts.stop();
 			geoTabMapView.tts.shutdown();
@@ -229,13 +227,11 @@ public class Geotab_activity extends MapActivity {
 
 	@Override
 	protected void onPause() {
-		Log.i("GeoTabActivity","onPause()");
 		super.onPause();
 	}
 
 	@Override
 	protected void onResume() {
-		Log.i("GeoTabActivity","onResume()");
 		super.onResume();
 	}
 

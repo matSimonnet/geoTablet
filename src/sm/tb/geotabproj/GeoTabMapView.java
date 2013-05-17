@@ -25,18 +25,20 @@ import android.view.MotionEvent;
 
 public class GeoTabMapView extends MapView{
 	
-	//treshold to launch vocal announce
-	final int nodeRadiusTreshold = 100;
-	private int fingerNodeRadius = 0 ;
+	// variables declarations
+	final int nodeRadiusTreshold = 80; // -> radius treshold to launch vocal announce of a touched node  
+	private int fingerNodeRadius; // -> radius of the finger track draw
+	public TextToSpeech tts = null; // ->  
+	private String lastAnnounce = "";
 	
-	String lastAnnounce = "";
-	MapDatabase mapDatabase;
+	
+	
+	public MapDatabase mapDatabase;
 	public GeoTabMapDatabaseCallback callback = null;
 	public String tagKeyCurrent = "";
 	public String tagValueCurrent = "";
+	
 
-
-	public TextToSpeech tts = null; 
 	public TextToSpeech ttsOutOfMap = null; 
 	private boolean out = false;
 	
@@ -95,7 +97,9 @@ public class GeoTabMapView extends MapView{
 		switch (action) {
 		case MotionEvent.ACTION_DOWN:
 			
-			if (tagKeyCurrent.equals("")) tts.speak("sélectionner les données à afficher dans le menu en haut à droite", TextToSpeech.QUEUE_FLUSH, null);
+			if (tagKeyCurrent.equals("")) {
+				tts.speak("sélectionner les données à afficher dans le menu en haut à droite", TextToSpeech.QUEUE_FLUSH, null);
+			}
 			
 			outOfMap(event.getX(), event.getY());
 //			Log.i("action", "MotionEvent.ACTION_DOWN");
@@ -121,33 +125,14 @@ public class GeoTabMapView extends MapView{
 
 			Log.i("this.callback.pois.size()", "" + this.callback.pois.size());
 			
-			/*
-			try {
-				circleOverlay.clear();
-			} catch (Exception e) {
-				e.printStackTrace();
-			} 
-				for (int i = 0; i < this.callback.pois.size() ; i++)
-				{
-				Log.i("this.callback.pois.get(i).getLatitude()", ""+ this.callback.pois.get(i).getLatitude()*Math.pow(10, -6));
-				Log.i("this.callback.pois.get(i).getLatitude()", ""+ this.callback.pois.get(i).getLongitude()*Math.pow(10, -6));
-				circle = new OverlayCircle(		new GeoPoint(
-													this.callback.pois.get(i).getLatitude()*Math.pow(10, -6), 
-													this.callback.pois.get(i).getLongitude()*Math.pow(10, -6)), 
-												this.convertRadiusToMeters(new GeoPoint(
-													this.callback.pois.get(i).getLatitude()*Math.pow(10, -6), 
-													this.callback.pois.get(i).getLongitude()*Math.pow(10, -6)))  , 
-												"first overlay"); //radios in meter
-				circleOverlay.addCircle(circle);
-				}
-				*/
-			
 			break;
 		
 		case MotionEvent.ACTION_UP:
 //			Log.i("action", "MotionEvent.ACTION_UP");
-			if (!tagKeyCurrent.equals("")) tts.stop();
-			if (!tagKeyCurrent.equals("")) ttsOutOfMap.stop();
+			//if (!tagKeyCurrent.equals("")) 
+				tts.stop();
+			//if (!tagKeyCurrent.equals("")) 
+				//ttsOutOfMap.stop();
 			out = false;
 				break;
 				
@@ -177,7 +162,8 @@ public class GeoTabMapView extends MapView{
 			else 
 			{
 				lastAnnounce = "";
-				if (!tagKeyCurrent.equals("")) tts.stop();
+				//if (!tagKeyCurrent.equals("")) 
+					tts.stop();
 			}
 		
 			this.callback.pois.clear();
@@ -336,8 +322,8 @@ public class GeoTabMapView extends MapView{
 		if (!out){	
 			if ( ( x<width/(ratio) || x>width-width/(ratio) || y<height/(ratio) || y>height-height/(ratio-12) )
 					&& !ttsOutOfMap.isSpeaking() ){
-				ttsOutOfMap.speak("Bord de la Carte", TextToSpeech.QUEUE_FLUSH , null);
-				ttsOutOfMap.playSilence(2000, TextToSpeech.QUEUE_ADD, null);
+				tts.speak("Bord de la Carte", TextToSpeech.QUEUE_FLUSH , null);
+				tts.playSilence(2000, TextToSpeech.QUEUE_ADD, null);
 				Log.i("OutOfMap", "Bord de la Carte ##> " + y);
 				out = true;
 			}	
@@ -345,7 +331,7 @@ public class GeoTabMapView extends MapView{
 		else { 
 			Log.i("OutOfMap", "END ");
 			out =false;
-			ttsOutOfMap.stop();
+			tts.stop();
 		}
 		if (x>width/ratio || x<width-width/ratio || y>height/ratio || y<height-height/ratio){
 		out = false;
