@@ -27,52 +27,38 @@ public class GeoTabMapView extends MapView{
 	
 	// variables declarations
 	final int nodeRadiusTreshold = 80; // -> radius treshold to launch vocal announce of a touched node  
+	public TextToSpeech tts = null; // -> to speak
+	public MapDatabase mapDatabase; // -> contains the method to collect OSM elements (executequery())
+	public GeoTabMapDatabaseCallback geoTabMapDatabaseCallback = null; // -> implements MapDatabaseCallback and contains point of interest
+	public String tagKeyCurrent = ""; // -> selected key to announce
+	public String tagValueCurrent = ""; // -> selected value to announce
+	public float viewScale = (float)1.0; // -> scale of the view to zoom in and avoid a finger to touch too many object at the same time
 	private int fingerNodeRadius; // -> radius of the finger track draw
-	public TextToSpeech tts = null; // ->  
-	private String lastAnnounce = "";
-	
-	
-	
-	public MapDatabase mapDatabase;
-	public GeoTabMapDatabaseCallback callback = null;
-	public String tagKeyCurrent = "";
-	public String tagValueCurrent = "";
-	
+	private String lastAnnounce = ""; // -> to be able not repeating the same announce	
+	private boolean out = false; // -> to know if we are in or out
+	private ArrayCircleOverlay circleOverlay; // -> list of layers containing circles 
+	private OverlayCircle circle; // -> circles to fill circle overlay 
+	private int mapScale = 8; // -> scale of the map
 
-	public TextToSpeech ttsOutOfMap = null; 
-	private boolean out = false;
 	
-	//View Scale
-	public float viewScale = (float)2.0;
-		
-	//Tile Scale
-	private int mapScale = 8;
-	
-	public int getMapScale() {
-		return mapScale;
-	}
-
-	public void setMapScale(int mapScale) {
-		this.mapScale = mapScale;
-	}
-
-	private ArrayCircleOverlay circleOverlay;
-	private OverlayCircle circle;
-
-
 	public GeoTabMapView(Context context) {
 		super(context);	
-		callback = new GeoTabMapDatabaseCallback(this);
+		
+		// create callback
+		geoTabMapDatabaseCallback = new GeoTabMapDatabaseCallback(this);
+		// create dataBase
 		mapDatabase = this.getMapDatabase();
 		
+		// create listener for TTS
 		OnInitListener onInitListener = new OnInitListener() {
 			@Override
 			public void onInit(int status) {
 			}
 		};
+		// create TTS
 		tts = new TextToSpeech(getContext(), onInitListener);
-		ttsOutOfMap = new TextToSpeech(getContext(), onInitListener);
-	
+		
+		// create circle overlay 
 	    Paint circleDefaultPaintFill = new Paint(Paint.ANTI_ALIAS_FLAG);
 	    circleDefaultPaintFill.setColor(Color.YELLOW);
 	    circleDefaultPaintFill.setAlpha(60);
@@ -86,31 +72,37 @@ public class GeoTabMapView extends MapView{
 	    circleOverlay = new ArrayCircleOverlay(circleDefaultPaintFill,circleDefaultPaintOutline);
 	    this.getOverlays().add(circleOverlay);
 	}
-	
 
 	@Override
 	public boolean onTouchEvent (MotionEvent event){
 		super.onTouchEvent(event);
 		
+		// create action relative to touch events
 		int action = event.getAction() & MotionEvent.ACTION_MASK;
 		
+		// actions to do depending on touch events
 		switch (action) {
+		
+		// when the finger touch the view
 		case MotionEvent.ACTION_DOWN:
 			
-			if (tagKeyCurrent.equals("")) {
+			// Explain the user what to do whether no data is selected 
+			if (tagKeyCurrent.equals("")) 
+			{
 				tts.speak("sélectionner les données à afficher dans le menu en haut à droite", TextToSpeech.QUEUE_FLUSH, null);
 			}
-			
+			// check if the contact is about to go out of map (does not work if viewscale is not 1.0)
 			outOfMap(event.getX(), event.getY());
-//			Log.i("action", "MotionEvent.ACTION_DOWN");
+			
+			// get the touch tile
 			Projection projection = this.getProjection();
 			long tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScale);
 			long tileX = MercatorProjection.longitudeToTileX( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude(), (byte) mapScale);
 			Tile tile = new Tile(tileX, tileY, (byte) mapScale);
-			Log.w("tileXMOVE", "" + tileX);
-			Log.w("tileYMOVE", "" + tileY);
-			this.mapDatabase.executeQuery(tile, this.callback);
-			PointOfInterest nearestPOI = getNearestPOI(this.callback.pois , projection.fromPixels((int)event.getX(0), (int)event.getY(0)));		
+			
+			// look for the nearest and announce only the name if the distance is under a treshold 
+			this.mapDatabase.executeQuery(tile, this.geoTabMapDatabaseCallback);
+			PointOfInterest nearestPOI = getNearestPOI(this.geoTabMapDatabaseCallback.pois , projection.fromPixels((int)event.getX(0), (int)event.getY(0)));		
 			if (nearestPOI != null) 
 			{
 				List<Tag> tags = nearestPOI.getTags();
@@ -122,65 +114,68 @@ public class GeoTabMapView extends MapView{
 					}
 				}
 			}
-
-			Log.i("this.callback.pois.size()", "" + this.callback.pois.size());
 			
-			break;
+			break; // end of Motion.Event.ACTION_DOWN
 		
+		// when the finger leave the view
 		case MotionEvent.ACTION_UP:
-//			Log.i("action", "MotionEvent.ACTION_UP");
-			//if (!tagKeyCurrent.equals("")) 
-				tts.stop();
-			//if (!tagKeyCurrent.equals("")) 
-				//ttsOutOfMap.stop();
+			// stop TTS
+			tts.stop();
+			// reset a potential out of map
 			out = false;
-				break;
+			// make pois list empty
+			this.geoTabMapDatabaseCallback.pois.clear();
+				break;// end of Motion.Event.ACTION_DOWN
 				
 		case MotionEvent.ACTION_MOVE:
+			// check if the contact is about to go out of map (does not work if viewscale is not 1.0)
 			outOfMap(event.getX(), event.getY());
-//			Log.i("action", "MotionEvent.ACTION_MOVE");
+			
+			// get the touch tile
 			projection = this.getProjection();
 			tileY = MercatorProjection.latitudeToTileY( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), (byte) mapScale);
 			tileX = MercatorProjection.longitudeToTileX( projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude(), (byte) mapScale);
 			tile = new Tile(tileX, tileY, (byte) mapScale);
-			this.mapDatabase.executeQuery(tile, this.callback);
-//			Log.i("getNearestPOI", "this.callback.pois.size = " + this.callback.pois.size());
-			nearestPOI = getNearestPOI(this.callback.pois , projection.fromPixels((int)event.getX(0), (int)event.getY(0)));		
 			
-			//>>>>>>>>>>>>>>>>>>>>>>>>> LE BON ALGO POUR LES ANNONCES
-			if (nearestPOI != null) {
+			// look for the nearest and announce only the name if the distance is under a treshold 
+			this.mapDatabase.executeQuery(tile, this.geoTabMapDatabaseCallback);
+			nearestPOI = getNearestPOI(this.geoTabMapDatabaseCallback.pois , projection.fromPixels((int)event.getX(0), (int)event.getY(0)));		
+			if (nearestPOI != null) 
+			{
 				List<Tag> tags = nearestPOI.getTags();
-				for (int i = 0; i < tags.size(); i++){
-					if ( tags.get(i).key.equals("name") && !lastAnnounce.equals(""+tags.get(i).value)){ 
+				for (int i = 0; i < tags.size(); i++)
+				{
+					if ( tags.get(i).key.equals("name") && !lastAnnounce.equals(""+tags.get(i).value))
+					{ 
 						tts.speak(""+tags.get(i).value, TextToSpeech.QUEUE_FLUSH, null);
 						lastAnnounce = ""+tags.get(i).value;
 					}
-//					Log.i( "nearestPOI.getTags()" , "key = "+ tags.get(i).key + " ; value = " + tags.get(i).value);
-//					Toast.makeText(getContext(), "Key = "+ tags.get(i).key , Toast.LENGTH_SHORT).show() ; //+ " value = " + tags.get(i).value
 				}
 			}
 			else 
 			{
 				lastAnnounce = "";
-				//if (!tagKeyCurrent.equals("")) 
 					tts.stop();
 			}
 		
-			this.callback.pois.clear();
+			// make pois list empty
+			this.geoTabMapDatabaseCallback.pois.clear();
 			
-			circle = new OverlayCircle(		new GeoPoint(
+			// draw finger course but use a lot of memory
+			circle = new OverlayCircle(	new GeoPoint(
 					projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLatitude(), 
 					projection.fromPixels((int)event.getX(0), (int)event.getY(0)).getLongitude()), 
 					this.fingerNodeRadius , "first overlay"); //radios in meter
 			circleOverlay.addCircle(circle);
 			
-				break;
-				// LE BON ALGO POUR LES ANNONCES <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+				break; // end of Motion.Event.ACTION_DOWN
 				
+		//for multitouch		
 		case MotionEvent.ACTION_POINTER_DOWN:
 //			Log.i("action", "ACTION_POINTER_DOWN");	
 				break;
 		
+		//for multitouch
 		case MotionEvent.ACTION_POINTER_UP:
 //			Log.i("action", "ACTION_POINTER_UP");	
 				break;
@@ -192,7 +187,7 @@ public class GeoTabMapView extends MapView{
 	return true;
 	}
 	
-	// Recuperation du POI le plus proche
+	// Get the nearest POI
 	public PointOfInterest getNearestPOI(List<PointOfInterest> pois, GeoPoint origine) {
 	    
 		double distanceMin = 0;
@@ -201,79 +196,61 @@ public class GeoTabMapView extends MapView{
 	    // Get Projection
 	    Projection projection = this.getProjection();
 	    
-	    // Valeur en pixel de origine
+	    // origin pixel value
 	    Point posOrigine = new Point();
-	    //Log.i("Dist","" + posOrigine.x + " : "+ posOrigine.y + "ORIGINE" + origine.getLatitude() + " / " + origine.getLongitude());
-	    
 		projection.toPixels(origine, posOrigine);
-		//Log.i("Dist","" + posOrigine.x + " : "+ posOrigine.y + "ORIGINE" + origine.getLatitude() + " / " + origine.getLongitude());
 	    
 		if (pois.size() > 0) 
 		{
-			// Le premier POI est le plus proche
+			// the first POI is the nearest
 			poiNearest = pois.get(0);
 			
-			// Cree un GeoPoint a partir de poiNearest;
+			// Create a GeoPoint from poiNearest;
 			GeoPoint geoPOI = new GeoPoint(poiNearest.getLatitude()* Math.pow(10, -6), poiNearest.getLongitude()* Math.pow(10, -6));
 			Point posPOI = new Point();
 			projection.toPixels(geoPOI, posPOI);
 		    
-			// calcul distance
+			// calculate distance
 			distanceMin = this.Distance(posOrigine.x,posOrigine.y,posPOI.x,posPOI.y);
 			//Log.i("Dist", " 0 : " + distanceMin + "("+posPOI.x+" / "+posPOI.y+")");
 			
 			for (int i = 1; i < pois.size(); i++)
 			{
-				// En fait non c'est peut celui ci qui est le plus proche
+				// actually it could be this one the nearest
 				PointOfInterest poi = pois.get(i);
 				
-				// Cree un GeoPoint a partir de poi; 
+				// Create GeoPoint from poi; 
 				geoPOI = new GeoPoint(poi.getLatitude()* Math.pow(10, -6), poi.getLongitude()* Math.pow(10, -6));
 				projection.toPixels(geoPOI, posPOI);
 				
-				// Calcul la distance
+				// Calculate distance
 				double distance = this.Distance(posOrigine.x,posOrigine.y,posPOI.x,posPOI.y);
-				//Log.i("Dist", " "+iP+" : " + distance + "("+posPOI.x+" / "+posPOI.y+")");
-//				List<Tag> tags = poi.getTags();
-//				for (int iT = 0; iT < tags.size(); iT++)
-//				{
-//					Log.i("Dist",""+tags.get(iT).key + " / "+ tags.get(iT).value);
-//				}
-//				
-				// Si distance inferieur, c'etait bien lui le plus proche
+		
+				// If distance is inferior, it was this one the nearest
 				if (distance < distanceMin)
 				{
 					distanceMin = distance;
 					poiNearest = poi;
 				}
-			}
-			
-			//Log.i("Dist", " MinDist : " + distanceMin);
+			}			
 		}
 		else 
 			return null;
-		
-//		List<Tag> tags = poiNearest.getTags();
-//		for (int iT = 0; iT < tags.size(); iT++)
-//		{
-//			Log.i("Dist",""+tags.get(iT).key + " / "+ tags.get(iT).value);
-//		}
 		
 		if (distanceMin > (nodeRadiusTreshold/viewScale))
 			poiNearest = null;
 		
 		return poiNearest;
-			
 	}
 
-	// Fonction pour avoir la distance entre 2 points
+	// calculate distance between two points
 	public double Distance(double x1, double y1, double x2, double y2) {
 		double distance;
 		distance = Math.sqrt( ((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)) );
 		return distance;
 	}
 	
-	//Fonction pour convertir le rayon pixel en metre
+	//to convert pixels in meters
 	public float convertRadiusToMeters(GeoPoint geo){
 		
     Point circleCenter = new Point();
@@ -284,17 +261,14 @@ public class GeoTabMapView extends MapView{
     
     // Calculate center in pixels
     projection.toPixels(geo, circleCenter);
-//    Log.i("CIRCLECENTER", "circleCenter.x = " + circleCenter.x + "  / circleCenter.y = " + circleCenter.y);
     
     //calculate border in pixels
     circleBorder.x = circleCenter.x + nodeRadiusTreshold; 
     circleBorder.y = circleCenter.y;
-//    Log.i("CIRCLEBORDER", "circleBorder.x = " + circleBorder.x + "  / circleBorder.y = " + circleBorder.y);
      
     //calculate geoBorder 
     GeoPoint geoBorder = new GeoPoint(	projection.fromPixels(circleBorder.x, circleBorder.y).getLatitude(), 
     									projection.fromPixels(circleBorder.x, circleBorder.y).getLongitude()); 
-//    Log.i("GEOBORDER", " lat = " + geoBorder.getLatitude() + " ; long = " + geoBorder.getLongitude());
     
     //calculate distance in meters
     Location locationA = new Location("point A");
@@ -307,24 +281,23 @@ public class GeoTabMapView extends MapView{
     
     double distance = locationA.distanceTo(locationB);
     this.fingerNodeRadius = (int)((distance/10)/viewScale) ; 
-   // Log.w("DISTANCE", "" + distance); 
     
     return (float)distance/viewScale  ; 
 	}
 	
 	
-	//Function to announce Out of maps
+	// Announce Out of maps
 	public void outOfMap(float x, float y){
 		int ratio = 20;
 		float height = Geotab_activity.displaymetrics.heightPixels;
 		float width = Geotab_activity.displaymetrics.widthPixels;
 
-		if (!out){	
+		if (!out){				
 			if ( ( x<width/(ratio) || x>width-width/(ratio) || y<height/(ratio) || y>height-height/(ratio-12) )
-					&& !ttsOutOfMap.isSpeaking() ){
+					&& !tts.isSpeaking() 
+					){
 				tts.speak("Bord de la Carte", TextToSpeech.QUEUE_FLUSH , null);
 				tts.playSilence(2000, TextToSpeech.QUEUE_ADD, null);
-				Log.i("OutOfMap", "Bord de la Carte ##> " + y);
 				out = true;
 			}	
 		}//end of if (!out)
@@ -337,4 +310,15 @@ public class GeoTabMapView extends MapView{
 		out = false;
 		}
 	}
+	
+	
+	public int getMapScale() {
+		return mapScale;
+	}
+
+	public void setMapScale(int mapScale) {
+		this.mapScale = mapScale;
+	}
+	
+	
 }

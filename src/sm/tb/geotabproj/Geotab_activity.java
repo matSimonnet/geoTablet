@@ -166,7 +166,7 @@ public class Geotab_activity extends MapActivity {
 		nodeRadiusInMeter = geoTabMapView.convertRadiusToMeters(this.mapCenter); 
 
 		//clean previous pois contents
-		geoTabMapView.callback.pois.clear();
+		geoTabMapView.geoTabMapDatabaseCallback.pois.clear();
 		
 		//clean previous overlay
 		circleOverlay.clear();
@@ -186,17 +186,17 @@ public class Geotab_activity extends MapActivity {
 				Tile tileOppositeTer = new Tile( (tileX-i) , (tileY+j), (byte) (geoTabMapView.getMapScale() ) );
 				
 				//Fill pois content 
-				geoTabMapView.callback.pois.clear();
-				geoTabMapView.mapDatabase.executeQuery(tile, geoTabMapView.callback);
-				geoTabMapView.mapDatabase.executeQuery(tileOpposite, geoTabMapView.callback);
-				geoTabMapView.mapDatabase.executeQuery(tileOppositeBis, geoTabMapView.callback);
-				geoTabMapView.mapDatabase.executeQuery(tileOppositeTer, geoTabMapView.callback);
+				geoTabMapView.geoTabMapDatabaseCallback.pois.clear();
+				geoTabMapView.mapDatabase.executeQuery(tile, geoTabMapView.geoTabMapDatabaseCallback);
+				geoTabMapView.mapDatabase.executeQuery(tileOpposite, geoTabMapView.geoTabMapDatabaseCallback);
+				geoTabMapView.mapDatabase.executeQuery(tileOppositeBis, geoTabMapView.geoTabMapDatabaseCallback);
+				geoTabMapView.mapDatabase.executeQuery(tileOppositeTer, geoTabMapView.geoTabMapDatabaseCallback);
 				
 				// add pois from different tiles in the overlay 	
-				for(int k = 0; k < geoTabMapView.callback.pois.size(); k++)
+				for(int k = 0; k < geoTabMapView.geoTabMapDatabaseCallback.pois.size(); k++)
 					{
-					circle = new OverlayCircle(new GeoPoint(geoTabMapView.callback.pois.get(k).getLatitude()*Math.pow(10, -6),
-															 geoTabMapView.callback.pois.get(k).getLongitude()*Math.pow(10, -6) ), 
+					circle = new OverlayCircle(new GeoPoint(geoTabMapView.geoTabMapDatabaseCallback.pois.get(k).getLatitude()*Math.pow(10, -6),
+															 geoTabMapView.geoTabMapDatabaseCallback.pois.get(k).getLongitude()*Math.pow(10, -6) ), 
 															 nodeRadiusInMeter , 
 															 "first overlay"); 
 					circleOverlay.addCircle(circle);
@@ -211,7 +211,7 @@ public class Geotab_activity extends MapActivity {
 		}
 		
 		//clean 
-		geoTabMapView.callback.pois.clear();
+		geoTabMapView.geoTabMapDatabaseCallback.pois.clear();
 		
 		
 		}//end of refreshmapscale()

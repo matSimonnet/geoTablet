@@ -24,7 +24,6 @@ public class PointOfInterest {
 		return Longitude;
 	}
 
-
 	public ArrayList<Tag> getTags() {
 		return tags;
 	}
@@ -41,6 +40,5 @@ public class PointOfInterest {
 	{
 		tags.add(new Tag(key,value));	
 	}
-	
 	
 }
