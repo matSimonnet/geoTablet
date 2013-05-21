@@ -20,24 +20,13 @@ public class PointOfInterest {
 		return Latitude;
 	}
 
-	public void setLatitude(double latitude) {
-		Latitude = latitude;
-	}
-
 	public double getLongitude() {
 		return Longitude;
 	}
 
-	public void setLongitude(double longitude) {
-		Longitude = longitude;
-	}
 
 	public ArrayList<Tag> getTags() {
 		return tags;
-	}
-
-	public void setTags(ArrayList<Tag> tags) {
-		this.tags = tags;
 	}
 
 	public boolean add(Tag object) {
