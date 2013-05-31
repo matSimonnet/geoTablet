@@ -289,8 +289,8 @@ public class GeoTabMapView extends MapView{
 	// Announce Out of maps
 	public void outOfMap(float x, float y){
 		int ratio = 20;
-		float height = Geotab_activity.displaymetrics.heightPixels;
-		float width = Geotab_activity.displaymetrics.widthPixels;
+		float height = GeoTab_activity.displaymetrics.heightPixels;
+		float width = GeoTab_activity.displaymetrics.widthPixels;
 
 		if (!out){				
 			if ( ( x<width/(ratio) || x>width-width/(ratio) || y<height/(ratio) || y>height-height/(ratio-12) )

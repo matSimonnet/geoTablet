@@ -23,7 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 @SuppressLint("SdCardPath")
-public class Geotab_activity extends MapActivity {
+public class GeoTab_activity extends MapActivity {
 	
 	// Variables declarations 
 	static public DisplayMetrics displaymetrics = null; // -> to get screensize in pixels
@@ -51,7 +51,7 @@ public class Geotab_activity extends MapActivity {
         
         // fill view
         setContentView(geoTabMapView); 
-        
+                
         // gives file to geoTabMapView
         geoTabMapView.setMapFile(new File(Environment.getExternalStorageDirectory().getPath()+ "/map/africa.map"));
 
