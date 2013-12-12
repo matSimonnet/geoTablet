@@ -4,7 +4,6 @@ import java.io.File;
 
 import org.mapsforge.android.maps.MapActivity;
 import org.mapsforge.android.maps.MapController;
-import org.mapsforge.android.maps.Projection;
 import org.mapsforge.android.maps.overlay.ArrayCircleOverlay;
 import org.mapsforge.android.maps.overlay.OverlayCircle;
 import org.mapsforge.core.GeoPoint;

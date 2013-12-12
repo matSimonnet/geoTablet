@@ -9,10 +9,4 @@
  android:layout_height="fill_parent"
  />
 
-    <sm.tb.geotabproj.MultiTouchView
- android:id="@+id/touchview"
- android:layout_width="fill_parent"
- android:layout_height="fill_parent"
- />       
-
 </RelativeLayout>
